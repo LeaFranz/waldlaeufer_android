@@ -1,6 +1,8 @@
 package at.fhooe.sail.wearable_waldlaeuefer
 
 import android.Manifest
+import android.app.Dialog
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.media.MediaRecorder
@@ -8,6 +10,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.View
+import android.view.View.OnClickListener
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -35,7 +40,7 @@ const val LOCATION_REQUEST_CODE = 9
 const val DEFAULT_LAT = 48.367470
 const val DEFAULT_LON = 14.516010
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
 
     // audio
     private lateinit var binding: ActivityMainBinding
@@ -55,6 +60,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map_fragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
+        binding.activityMainBtnAdd.setOnClickListener(this)
     }
 
 
@@ -221,6 +227,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             e.printStackTrace()
         }
 
+        binding.activityMainProgress.visibility = View.VISIBLE
+        binding.activityMainTvRecording.visibility = View.VISIBLE
+
         mRecorder?.start()
         Log.i(TAG, "Start sound recording")
 
@@ -228,15 +237,36 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         Handler().postDelayed({
             var maxAmplitude = mRecorder?.maxAmplitude
+            var message: String = ""
             if (maxAmplitude != null && maxAmplitude != 0) {
                 var maxA = maxAmplitude!!.toFloat()
                 var dec: Float = (20 * (log10(maxA))).toFloat()
 
                 Log.i(TAG, "Max. decibel: " + dec)
+                message = "The max. noise was " + dec + " decibel."
+            } else {
+                message = "Recording noise failed. \nPlease use the survey."
             }
 
             stopSoundRecording()
-        }, 2000)
+            binding.activityMainProgress.visibility = View.INVISIBLE
+            binding.activityMainTvRecording.visibility = View.INVISIBLE
+
+            val bob: AlertDialog.Builder = AlertDialog.Builder(this)
+            bob.setTitle("Survey")
+
+            bob.setMessage(message)
+
+            bob.setPositiveButton("Next") { _, _ ->
+                Log.i(TAG, "TODO: implement survey")
+            }
+            bob.setNegativeButton("Cancel") { _, _ ->
+                Log.d(TAG, "Cancelled dialog")
+            }
+            val d: Dialog = bob.create()
+            d.show()
+
+        }, 3000)
     }
 
     fun stopSoundRecording() {
@@ -247,6 +277,37 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
             mRecorder = null;
         }
+    }
+
+    override fun onClick(_view: View?) {
+        when (_view?.id) {
+            R.id.activity_main_btn_add -> {
+                onAddButtonClicked()
+            }
+            else -> {
+                Log.e(TAG, "MainActivity: onClick - unexpected id")
+            }
+        }
+    }
+
+    // dialog 1
+    fun onAddButtonClicked() {
+        val bob: AlertDialog.Builder = AlertDialog.Builder(this)
+        bob.setTitle("Record Noise in the Area")
+        bob.setMessage(
+            "Recording audio requires access to a microphone. \n" +
+                    "Please don’t put your phone away for the duration of the recording. \n" +
+                    "The recording will only be used to asses noise level."
+        )
+
+        bob.setPositiveButton("Record") { _, _ ->
+            checkMicPermission()
+        }
+        bob.setNegativeButton("Skip to survey") { _, _ ->
+            Log.d(TAG, "TODO: implement survey")
+        }
+        val d: Dialog = bob.create()
+        d.show()
     }
 
 
