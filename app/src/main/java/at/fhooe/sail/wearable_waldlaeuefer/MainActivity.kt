@@ -240,16 +240,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
             })
             .addOnSuccessListener { location: Location? ->
                 if (location == null) {
-                    Log.i(TAG, "Getting current location not possible - use default")
-                    val currentLoc = LatLng(DEFAULT_LAT, DEFAULT_LON)
-                    mMap.addMarker(
-                        MarkerOptions().position(currentLoc).title("Default location")
-                    )
-                    val cameraPosition = CameraPosition.Builder()
-                        .target(currentLoc)
-                        .zoom(15f).build()
-
-                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                   zoomToDefaultLocation()
                 } else {
                     val lat = location.latitude
                     val lon = location.longitude
@@ -268,8 +259,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
             }
     }
 
-    fun zoomAndMapLocation(lat: Float, lon: Float) {
+    fun zoomToDefaultLocation() {
+        Log.i(TAG, "Getting current location not possible - use default")
+        val currentLoc = LatLng(DEFAULT_LAT, DEFAULT_LON)
+        mMap.addMarker(
+            MarkerOptions().position(currentLoc).title("Default location")
+        )
+        val cameraPosition = CameraPosition.Builder()
+            .target(currentLoc)
+            .zoom(15f).build()
 
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
     fun makeLocationPermissionRequest() {
@@ -325,6 +325,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
             LOCATION_REQUEST_CODE -> {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Log.i(TAG, "Location Permission has been denied by user")
+                    zoomToDefaultLocation()
                 } else {
                     Log.i(TAG, "Location Permission has been granted by user")
                     getCurrentLocation()

@@ -37,10 +37,6 @@
             android:name="MyNavigationService"
             android:foregroundServiceType="location" /> >
         <activity
-            android:name=".MapsActivity"
-            android:exported="false"
-            android:label="@string/title_activity_maps" />
-        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
