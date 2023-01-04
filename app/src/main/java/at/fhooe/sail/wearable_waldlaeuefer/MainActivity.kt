@@ -1,6 +1,8 @@
 package at.fhooe.sail.wearable_waldlaeuefer
 
 import android.Manifest
+import android.accounts.Account
+import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -17,6 +19,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import at.fhooe.sail.wearable_waldlaeuefer.databinding.ActivityMainBinding
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.fitness.Fitness
+import com.google.android.gms.fitness.FitnessOptions
+import com.google.android.gms.fitness.data.DataType
+import com.google.android.gms.fitness.data.Field
+import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -31,6 +40,10 @@ import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
 import java.io.IOException
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.concurrent.TimeUnit
+import javax.xml.datatype.DatatypeConstants.SECONDS
 import kotlin.math.log10
 
 
@@ -39,6 +52,7 @@ const val RECORD_REQUEST_CODE = 8
 const val LOCATION_REQUEST_CODE = 9
 const val DEFAULT_LAT = 48.367470
 const val DEFAULT_LON = 14.516010
+const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 10
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
 
@@ -51,6 +65,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
+    // fitness API
+    lateinit var fitnessOptions: FitnessOptions
+    private var heartRate = 0.0
+    private var heartPoints = 0.0
+    lateinit var account: GoogleSignInAccount
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +80,102 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
             .findFragmentById(R.id.map_fragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
         binding.activityMainBtnAdd.setOnClickListener(this)
+
+        createFitnessAPIClient()
+    }
+
+    fun createFitnessAPIClient() {
+        fitnessOptions = FitnessOptions.builder()
+            .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.AGGREGATE_HEART_RATE_SUMMARY, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_HEART_POINTS, FitnessOptions.ACCESS_READ)
+            .build()
+
+        account = GoogleSignIn.getAccountForExtension(this, fitnessOptions)
+
+        if (!GoogleSignIn.hasPermissions(account, fitnessOptions)) {
+            GoogleSignIn.requestPermissions(
+                this, // your activity
+                GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+                account,
+                fitnessOptions
+            )
+        } else {
+            Log.d(TAG, "Permission for google fit granted")
+            accessGoogleFit()
+        }
+    }
+
+    // get data for last hour
+    fun accessGoogleFit() {
+        val end = LocalDateTime.now()
+        val start = end.minusHours(1)
+        val endSeconds = end.atZone(ZoneId.systemDefault()).toEpochSecond()
+        val startSeconds = start.atZone(ZoneId.systemDefault()).toEpochSecond()
+
+        setHeartRateData(startSeconds, endSeconds)
+        setHeartPointData(startSeconds, endSeconds)
+    }
+
+    fun setHeartRateData(startSeconds: Long, endSeconds: Long) {
+        val readRequest = DataReadRequest.Builder()
+            .aggregate(DataType.TYPE_HEART_RATE_BPM)
+            .setTimeRange(startSeconds, endSeconds, TimeUnit.SECONDS)
+            .bucketByTime(1, TimeUnit.HOURS)
+            .build()
+
+        Fitness.getHistoryClient(this, account)
+            .readData(readRequest)
+            .addOnSuccessListener({ response ->
+                Log.i(TAG, "Heart rate: OnSuccess() " + response)
+
+                var buckets = response.buckets
+
+                if (buckets.size > 0 && buckets[0].dataSets.size > 0) {
+                    var dataSet = buckets[0].dataSets[0]
+
+                    if (dataSet.dataPoints.size > 0) {
+                        var points =
+                            dataSet.dataPoints[0].getValue(Field.FIELD_AVERAGE)
+                        heartRate = points.toString().toDouble()
+                        Log.i(TAG, "Average heart rate in the last hour: " + heartRate)
+                    }
+                }
+            })
+            .addOnFailureListener({ e ->
+                Log.d(TAG, "Heart Rate:  OnFailure()", e)
+                heartRate = 0.0
+            })
+    }
+
+    fun setHeartPointData(startSeconds: Long, endSeconds: Long) {
+        val readRequest = DataReadRequest.Builder()
+            .aggregate(DataType.TYPE_HEART_POINTS)
+            .setTimeRange(startSeconds, endSeconds, TimeUnit.SECONDS)
+            .bucketByTime(1, TimeUnit.HOURS)
+            .build()
+
+        Fitness.getHistoryClient(this, account)
+            .readData(readRequest)
+            .addOnSuccessListener({ response ->
+                Log.i(TAG, "Heart Points: OnSuccess() " + response)
+                var buckets = response.buckets
+
+                if (buckets.size > 0 && buckets[0].dataSets.size > 0) {
+                    var dataSet = buckets[0].dataSets[0]
+
+                    if (dataSet.dataPoints.size > 0) {
+                        var points =
+                            dataSet.dataPoints[0].getValue(Field.FIELD_INTENSITY)
+                        heartPoints = points.toString().toDouble()
+                        Log.i(TAG, "Heart points in the last hour: " + heartPoints)
+                    }
+                }
+            })
+            .addOnFailureListener({ e ->
+                Log.d(TAG, "Hear Points: OnFailure()", e)
+                heartPoints = 0.0
+            })
     }
 
 
@@ -176,6 +291,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
         )
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (resultCode) {
+            Activity.RESULT_OK -> when (requestCode) {
+                GOOGLE_FIT_PERMISSIONS_REQUEST_CODE -> {
+                    Log.d(TAG, "Google fit permissions grantend")
+                    accessGoogleFit()
+                }
+            }
+            else -> {
+                Log.d(TAG, "Google Fit permissions not granted")
+            }
+        }
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -199,6 +329,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
                     Log.i(TAG, "Location Permission has been granted by user")
                     getCurrentLocation()
                 }
+            }
+            else -> {
+                Log.w(TAG, "Unexpected permission request code")
             }
         }
     }
