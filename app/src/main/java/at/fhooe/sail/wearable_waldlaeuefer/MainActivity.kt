@@ -124,7 +124,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
 
 
         Handler().postDelayed({
-
             Log.d(
                 TAG,
                 "before estimate dialog " + heartRate + " " + heartPoints + " " + moveMinutes
@@ -162,6 +161,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
 
                         heartRate = points.toString().toDouble()
                         Log.i(TAG, "Average heart rate in the last hour: " + heartRate)
+                    } else {
+                        heartRate = 0.0
                     }
                 }
             })
@@ -229,13 +230,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
                         moveMinutes = points.toString().toInt()
                         Log.i(TAG, "Move minutes in the last hour: " + moveMinutes)
                     } else {
-                        moveMinutes = null
+                        moveMinutes = 0
                     }
                 }
             })
             .addOnFailureListener({ e ->
                 Log.d(TAG, "Move minutes: OnFailure()", e)
-                heartPoints = 0.0
+                moveMinutes = 0
             })
     }
 

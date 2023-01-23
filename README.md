@@ -44,7 +44,11 @@ If a user has a heart rate in the normal range or it is elevated and we detected
 If the user has a higher heart rate than 100 and we detect no activity, the user might be stressed or might not be feeling good. Therefore we rate the feeling lower.
 
 ## Demos
-tbd
+Normal heart rate:
+
+Elevated heart rate without activity: TBD
+
+Elevanted heart rate with activity:
 
 ## Testing
 As Goolge Fit includes sensitive data and this app is not verified by Google, the feeling suggestion with GoogleFit is only testable if the Google Account gets added in the Google API console.
