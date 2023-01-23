@@ -45,10 +45,16 @@ If the user has a higher heart rate than 100 and we detect no activity, the user
 
 ## Demos
 Normal heart rate:
+https://user-images.githubusercontent.com/48798335/214076065-42fc5f9f-0118-4bfc-b4dd-7ed501088343.mp4
 
 Elevated heart rate without activity: TBD
 
-Elevanted heart rate with activity:
+Elevanted heart rate with activity: https://user-images.githubusercontent.com/48798335/214076218-b5a5132b-37dd-4827-ae56-08ba49fa8211.mp4
+
 
 ## Testing
+
+
+
+
 As Goolge Fit includes sensitive data and this app is not verified by Google, the feeling suggestion with GoogleFit is only testable if the Google Account gets added in the Google API console.
