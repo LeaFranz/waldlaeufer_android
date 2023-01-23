@@ -53,8 +53,4 @@ Elevanted heart rate with activity: https://user-images.githubusercontent.com/48
 
 
 ## Testing
-
-
-
-
 As Goolge Fit includes sensitive data and this app is not verified by Google, the feeling suggestion with GoogleFit is only testable if the Google Account gets added in the Google API console.
