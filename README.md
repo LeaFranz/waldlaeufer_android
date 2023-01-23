@@ -49,7 +49,7 @@ https://user-images.githubusercontent.com/48798335/214076065-42fc5f9f-0118-4bfc-
 
 Elevated heart rate without activity: https://user-images.githubusercontent.com/48798335/214080572-9846bbfd-1315-46d7-aead-bf5a038d2732.mp4
 
-Elevanted heart rate with activity: https://user-images.githubusercontent.com/48798335/214076218-b5a5132b-37dd-4827-ae56-08ba49fa8211.mp4
+Elevated heart rate with activity: https://user-images.githubusercontent.com/48798335/214076218-b5a5132b-37dd-4827-ae56-08ba49fa8211.mp4
 
 
 ## Testing
