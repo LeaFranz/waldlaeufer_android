@@ -4,7 +4,7 @@ Waldläufer app prototype for Wearable Computing WS22/23
 This app is the android Kotlin prototype of the iOS Waldläufer with the possibility to determine the current location using GPS, to record the noise level as well as to suggest a feeling based on the noise level, heartrate and activity.
 
 ## Noise level
-The noise gets recorded with the microphone using with the Android MediaRecorder for 3 seconds. The output format is THREE_GPP and the audio encoder is AMR_NB.
+The noise gets recorded with the microphone using with the Android MediaRecorder for 10 seconds. The output format is THREE_GPP and the audio encoder is AMR_NB.
 
 The maximum noise in decibel gets calculated from the max. amplitude:
 
@@ -26,7 +26,7 @@ Unfortunately GoogleFit still does not provide enough data to predict the stress
 #### Heart points
 [Heart Points](https://developers.google.com/fit/datatypes/activity#heart_points) get calculated from the heart rate, Metabolic Equivalent of Task (MET) values or walkign speed. The number of Heart Points earned depends on the intensity of the activity.     
 Example with heart rate:   
-- 1 HP (Low-medium insensity activity): 1 minute of actvity at >50% maximum heart rate
+- 1 HP (Low-medium intensity activity): 1 minute of activity at >50% maximum heart rate
 - 2 HPs (High intensity activity): 1 minute of activity at >70% max heart rate
 
 #### Move minutes

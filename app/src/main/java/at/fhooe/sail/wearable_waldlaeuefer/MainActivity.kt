@@ -444,7 +444,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
                 var emojiIndex = estimateNoiseFeeling()
                 if (emojiIndex != -1) {
                     message =
-                        "The max. noise was " + decibel + " decibel, so we estimate that you are feeling " + emojiArray[emojiIndex]
+                        "The max. noise was " + decibel + " decibel."
                 } else {
                     message = "The max. noise was " + decibel + " decibel."
                 }
@@ -460,7 +460,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
 
             // dialog 2
             noiseLevelDialog(message)
-        }, 3000)
+        }, 10000)
     }
 
     fun stopSoundRecording() {
@@ -539,10 +539,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
         var heartrateNormal = true
         var isActivity = false
         // higher heart rate
-        if (heartRate!! > 100) {
+        if (heartRate > 100) {
             // no activity -> stress?
             Log.i(TAG, "minutes and points " + moveMinutes + " " + heartPoints)
-            if (moveMinutes!! < 10 && heartPoints!! < 20.0) {
+            if (moveMinutes!! < 5 && heartPoints!! < 5.0) {
                 // not even 10 minutes of light activity
                 feelingIncrease = 1
                 heartrateNormal = false
