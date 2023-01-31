@@ -48,7 +48,10 @@ If the user has a higher heart rate than 100 and we detect no activity, the user
 - Google Fit does not provide the right and enough data
 - access to sensitive Google Fit data requires Google verification
 
-## Demos (see /media)
+## Demos
+See /media for screenshots and screenrecordings.
+
+
 Normal heart rate:
 
 <img src="./media/no_activity.jpeg" height="400px" />
