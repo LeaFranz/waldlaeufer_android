@@ -38,7 +38,7 @@ We assume an user was active when in the last 19 minutes:
 - he moved at least 5 minutes
 - and has earned at least 5 heart points
 
-### Feeling suggestion
+### Well-being suggestion
 If a user has a heart rate in the normal range or it is elevated and we detected an activity with Google Fit, the feeling suggestion from the sound level stays the same.
 
 If the user has a higher heart rate than 100 and we detect no activity, the user might be stressed or might not be feeling good. Therefore this influences the well-being estimation. This is only a suggestion for the user as there is not enough data to predict the stress level or well-being.
@@ -48,13 +48,18 @@ If the user has a higher heart rate than 100 and we detect no activity, the user
 - Google Fit does not provide the right and enough data
 - access to sensitive Google Fit data requires Google verification
 
-## Demos
+## Demos (see /media)
 Normal heart rate:
-https://user-images.githubusercontent.com/48798335/214076065-42fc5f9f-0118-4bfc-b4dd-7ed501088343.mp4
 
-Elevated heart rate without activity: https://user-images.githubusercontent.com/48798335/214080572-9846bbfd-1315-46d7-aead-bf5a038d2732.mp4
+<img src="./media/no_activity.jpeg" height="400px" />
 
-Elevated heart rate with activity: https://user-images.githubusercontent.com/48798335/214076218-b5a5132b-37dd-4827-ae56-08ba49fa8211.mp4
+Elevated heart rate without activity: 
+
+<img src="./media/stress.jpeg" height="400px" />
+
+Elevated heart rate with activity: 
+
+<img src="./media/active.jpeg" height="400px" />
 
 
 ## Testing

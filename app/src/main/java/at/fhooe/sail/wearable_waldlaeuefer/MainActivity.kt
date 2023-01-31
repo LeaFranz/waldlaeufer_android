@@ -111,10 +111,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
         }
     }
 
-    // get data for last half hour
+    // get data for last 10 minutes
     fun accessGoogleFit() {
         val end = LocalDateTime.now()
-        val start = end.minusMinutes(30)
+        val start = end.minusMinutes(10)
         val endSeconds = end.atZone(ZoneId.systemDefault()).toEpochSecond()
         val startSeconds = start.atZone(ZoneId.systemDefault()).toEpochSecond()
 
@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
         Handler().postDelayed({
             Log.d(
                 TAG,
-                "before estimate dialog " + heartRate + " " + heartPoints + " " + moveMinutes
+                "Data before estimation: " + heartRate + " " + heartPoints + " " + moveMinutes
             )
 
             if (heartRate != 0.0 && heartPoints != null && moveMinutes != null) {
@@ -160,7 +160,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
                             dataSet.dataPoints[0].getValue(Field.FIELD_AVERAGE)
 
                         heartRate = points.toString().toDouble()
-                        Log.i(TAG, "Average heart rate in the last hour: " + heartRate)
+                        Log.i(TAG, "Average heart rate in the lasth 10 minutes: " + heartRate)
                     } else {
                         heartRate = 0.0
                     }
@@ -193,7 +193,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
                         var points =
                             dataSet.dataPoints[0].getValue(Field.FIELD_INTENSITY)
                         heartPoints = points.toString().toDouble()
-                        Log.i(TAG, "Heart points in the last hour: " + heartPoints)
+                        Log.i(TAG, "Heart points in the last 10 minutes: " + heartPoints)
                     } else {
                         heartPoints = 0.0
                     }
@@ -219,8 +219,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
                 Log.i(TAG, "Move minutes: OnSuccess() " + response)
                 var buckets = response.buckets
 
-                Log.i(TAG, "move minutes bucekt " + buckets)
-
                 if (buckets.size > 0 && buckets[0].dataSets.size > 0) {
                     var dataSet = buckets[0].dataSets[0]
 
@@ -228,7 +226,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
                         var points =
                             dataSet.dataPoints[0].getValue(Field.FIELD_DURATION)
                         moveMinutes = points.toString().toInt()
-                        Log.i(TAG, "Move minutes in the last hour: " + moveMinutes)
+                        Log.i(TAG, "Move minutes in the 10 minutes: " + moveMinutes)
                     } else {
                         moveMinutes = 0
                     }
@@ -289,7 +287,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
     fun getCurrentLocation() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        Log.i(TAG, "Get current location")
+        Log.i(TAG, "Getting current location")
 
         fusedLocationClient.getCurrentLocation(
             Priority.PRIORITY_HIGH_ACCURACY,
@@ -437,18 +435,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
             var maxAmplitude = mRecorder?.maxAmplitude
             var message: String = ""
             if (maxAmplitude != null && maxAmplitude != 0) {
-                var maxA = maxAmplitude!!.toFloat()
+                var maxA = maxAmplitude.toFloat()
                 decibel = (20 * (log10(maxA))).toFloat()
 
                 Log.i(TAG, "Max. decibel: " + decibel)
-                var emojiIndex = estimateNoiseFeeling()
-                if (emojiIndex != -1) {
-                    message =
-                        "The max. noise was " + decibel + " decibel."
-                } else {
-                    message = "The max. noise was " + decibel + " decibel."
-                }
-
+                message = "The max. noise was " + decibel + " decibel."
             } else {
                 decibel = null
                 message = "Recording noise failed."
@@ -511,10 +502,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
 
         bob.setMessage(message)
 
-        // only 1 button if no permission for google fit?
-
         bob.setPositiveButton("Next") { _, _ ->
-            Log.i(TAG, "TODO: implement survey")
             createFitnessAPIClient()
         }
         bob.setNegativeButton("Cancel") { _, _ ->
@@ -525,15 +513,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
     }
 
     // https://developers.google.com/fit/datatypes/activity#heart_points
-    /**
-     * move minute > 30 && heat points > 30 -> activity
-     *
-     * heart points: 1 per minute low-mid intensity -> high intensity is 2 points per minute
-     * one heart point for each minute of moderately intense activity
-     * move minutes: minutes
-     */
-
-
     fun getFeelingEstimate(): String {
         var feelingIncrease = 0
         var heartrateNormal = true
@@ -541,9 +520,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
         // higher heart rate
         if (heartRate > 100) {
             // no activity -> stress?
-            Log.i(TAG, "minutes and points " + moveMinutes + " " + heartPoints)
+            Log.i(TAG, "Move minutes and heart points:  " + moveMinutes + " " + heartPoints)
             if (moveMinutes!! < 5 && heartPoints!! < 5.0) {
-                // not even 10 minutes of light activity
+                // not even 5 minutes of light activity
                 feelingIncrease = 1
                 heartrateNormal = false
                 isActivity = false
@@ -570,12 +549,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
 
     fun getFitFeelingText(heartRateNormal: Boolean, isActivity: Boolean): String {
         if (heartRateNormal) {
-            return "Your heartrate seems normal with an average of " + heartRate + " in the last half hour."
+            return "Your heartrate seems normal with an average of " + heartRate + " in the last 10 minutes."
         } else {
             if (isActivity) {
-                return "Your heartrate is elevated with an average of " + heartRate + " in the last half hour, but it seems like you have been active."
+                return "Your heartrate is elevated with an average of " + heartRate + " in the last 10 minutes, but it seems like you have been active."
             } else {
-                return "Your heartrate is elevated with an average of " + heartRate + " in the last half hour, but it seems like you have not been active. It might be the case that you are stressed."
+                return "Your heartrate is elevated with an average of " + heartRate + " in the last 10 minutes, but it seems like you have not been active. It might be the case that you are stressed."
             }
         }
     }
@@ -600,18 +579,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, OnClickListener {
         bob.setTitle("Noise in the Area")
         var message = "The max. noise was " + decibel + " decibel.\n" + getFeelingEstimate()
         bob.setMessage(
-            //"Your average heartrate in the last hour was " + heartRate + " and you received " + heartPoints + " heart points."
             message
         )
 
         bob.setPositiveButton("Done") { _, _ ->
         }
-        /*
-        bob.setNegativeButton("Skip to survey") { _, _ ->
-            Log.d(TAG, "TODO: implement survey")
-        }
 
-         */
         val d: Dialog = bob.create()
         d.show()
     }
